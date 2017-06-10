@@ -7,7 +7,9 @@
  */
 
 #include <sys/time.h>
+#ifndef _WIN32
 #include <sys/resource.h>
+#endif
 #include <math.h>
 #include <unistd.h>
 

@@ -51,5 +51,6 @@ src/test/regress/regression.out
 /.project
 /.pydevproject
 /.settings/
-
+/src/interfaces/libpq/Release/
+/.vs/
 

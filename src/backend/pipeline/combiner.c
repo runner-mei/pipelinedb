@@ -988,7 +988,7 @@ tick_sw_groups(ContQueryCombinerState *state, Relation matrel, bool force)
 		bool isnew;
 		Datum values[3];
 		bool nulls[3];
-		bool replaces[state->overlay_desc->natts];
+		bool *replaces = (bool *)calloc(sizeof(bool), state->overlay_desc->natts);
 		HeapTuple new_tup = ExecMaterializeSlot(state->overlay_slot);
 		HeapTuple old_tup = NULL;
 		HeapTuple os_tup;
@@ -1000,7 +1000,7 @@ tick_sw_groups(ContQueryCombinerState *state, Relation matrel, bool force)
 
 		if (!isnew)
 		{
-			MemSet(replaces, false, sizeof(replaces));
+			MemSet(replaces, false, sizeof(bool) * state->overlay_desc->natts);
 			ExecStoreTuple(overlay_entry->base.tuple, state->overlay_prev_slot, InvalidBuffer, false);
 
 			/*

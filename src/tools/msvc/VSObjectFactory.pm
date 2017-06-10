@@ -108,10 +108,10 @@ sub DetermineVisualStudioVersion
 	$? >> 8 == 0
 	  or croak
 "Unable to determine Visual Studio version: The nmake command wasn't found.";
-	if ($output =~ /(\d+)\.(\d+)\.\d+(\.\d+)?$/m)
-	{
-		return _GetVisualStudioVersion($1, $2);
-	}
+	# if ($output =~ /(\d+)\.(\d+)\.\d+(\.\d+)?$/m)
+	# {
+		return "14.00"; #_GetVisualStudioVersion(14, 0);
+	# }
 
 	croak
 "Unable to determine Visual Studio version: The nmake version could not be determined.";

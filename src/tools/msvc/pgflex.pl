@@ -13,6 +13,7 @@ use File::Basename;
 require 'src/tools/msvc/buildenv.pl' if -e 'src/tools/msvc/buildenv.pl';
 
 my ($flexver) = `flex -V`;    # grab first line
+print $flexver;
 $flexver = (split(/\s+/, $flexver))[1];
 $flexver =~ s/[^0-9.]//g;
 my @verparts = split(/\./, $flexver);

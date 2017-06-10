@@ -10,7 +10,9 @@
  *-------------------------------------------------------------------------
  */
 #include <unistd.h>
+#ifndef _WIN32
 #include <sys/utsname.h>
+#endif
 
 #include "postgres.h"
 #include "pgstat.h"

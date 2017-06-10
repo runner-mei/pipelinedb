@@ -17,8 +17,10 @@
  *
  *-------------------------------------------------------------------------
  */
+#ifndef _WIN32
 #include <execinfo.h>
 #include <unistd.h>
+#endif
 
 #include "postgres.h"
 
@@ -31,6 +33,36 @@
 #include "tcop/tcopprot.h"
 #include "utils/lsyscache.h"
 
+#ifdef _WIN32
+#include <Windows.h>
+
+void printStack( void )
+{
+     unsigned int   i;
+     void         * stack[ 100 ];
+     unsigned short frames;
+     SYMBOL_INFO  * symbol;
+     HANDLE         process;
+
+     process = GetCurrentProcess();
+
+     SymInitialize( process, NULL, TRUE );
+
+     frames               = CaptureStackBackTrace( 0, 100, stack, NULL );
+     symbol               = ( SYMBOL_INFO * )calloc( sizeof( SYMBOL_INFO ) + 256 * sizeof( char ), 1 );
+     symbol->MaxNameLen   = 255;
+     symbol->SizeOfStruct = sizeof( SYMBOL_INFO );
+
+     for( i = 0; i < frames; i++ )
+     {
+         SymFromAddr( process, ( DWORD64 )( stack[ i ] ), 0, symbol );
+
+         printf( "%i: %s - 0x%0X\n", frames - i - 1, symbol->Name, symbol->Address );
+     }
+
+     free( symbol );
+}
+#endif
 
 /*
  * debug_segfault
@@ -48,12 +80,17 @@ void
 debug_segfault(SIGNAL_ARGS)
 {
 	void *array[32];
-	size_t size = backtrace(array, 32);
+	size_t size;
 	fprintf(stderr, "Segmentation fault (PID %d)\n", MyProcPid);
 	fprintf(stderr, "version: %s\n", PIPELINE_VERSION_STR);
 	fprintf(stderr, "query: %s\n", debug_query_string);
 	fprintf(stderr, "backtrace:\n");
+#ifdef _WIN32
+	printStack();
+#else
+	size = backtrace(array, 32);
 	backtrace_symbols_fd(array, size, STDERR_FILENO);
+#endif
 
 #ifdef SLEEP_ON_ASSERT
 
@@ -70,6 +107,7 @@ debug_segfault(SIGNAL_ARGS)
 	exit(1);
 #endif
 }
+
 
 /*
  * print

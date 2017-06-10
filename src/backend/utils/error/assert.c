@@ -17,11 +17,43 @@
  *-------------------------------------------------------------------------
  */
 #include "postgres.h"
-
+#if _WIN32
 #include <unistd.h>
+#endif
 #include "execinfo.h"
 #include "miscadmin.h"
 #include "tcop/tcopprot.h"
+
+#ifdef _WIN32
+#include <Windows.h>
+
+void printStack( void )
+{
+     unsigned int   i;
+     void         * stack[ 100 ];
+     unsigned short frames;
+     SYMBOL_INFO  * symbol;
+     HANDLE         process;
+
+     process = GetCurrentProcess();
+
+     SymInitialize( process, NULL, TRUE );
+
+     frames               = CaptureStackBackTrace( 0, 100, stack, NULL );
+     symbol               = ( SYMBOL_INFO * )calloc( sizeof( SYMBOL_INFO ) + 256 * sizeof( char ), 1 );
+     symbol->MaxNameLen   = 255;
+     symbol->SizeOfStruct = sizeof( SYMBOL_INFO );
+
+     for( i = 0; i < frames; i++ )
+     {
+         SymFromAddr( process, ( DWORD64 )( stack[ i ] ), 0, symbol );
+
+         printf( "%i: %s - 0x%0X\n", frames - i - 1, symbol->Name, symbol->Address );
+     }
+
+     free( symbol );
+}
+#endif
 
 /*
  * ExceptionalCondition - Handles the failure of an Assert()
@@ -47,13 +79,16 @@ ExceptionalCondition(const char *conditionName,
 	}
 
 	/* dump stack trace */
-	size = backtrace(array, 32);
 	fprintf(stderr, "Assertion failure (PID %d)\n", MyProcPid);
 	fprintf(stderr, "version: %s\n", PIPELINE_VERSION_STR);
 	fprintf(stderr, "query: %s\n", debug_query_string);
 	fprintf(stderr, "backtrace:\n");
+#ifdef _WIN32
+	printStack();
+#else
+	size = backtrace(array, 32);
 	backtrace_symbols_fd(array, size, STDERR_FILENO);
-
+#endif
 	/* Usually this shouldn't be needed, but make sure the msg went out */
 	fflush(stderr);
 

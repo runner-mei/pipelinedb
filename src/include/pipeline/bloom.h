@@ -16,7 +16,7 @@
 
 typedef struct BloomFilter
 {
-	uint32	vl_len_;
+	uint32_t vl_len_;
 	uint32_t m;
 	uint16_t k;
 	uint32_t blen;

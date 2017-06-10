@@ -10,7 +10,9 @@
  *-------------------------------------------------------------------------
  */
 #include <math.h>
+#ifndef _WIN32
 #include <sys/resource.h>
+#endif
 #include <time.h>
 #include <unistd.h>
 

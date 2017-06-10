@@ -90,8 +90,8 @@ get_next_id(Relation rel)
 
 	if (num_ids)
 	{
-		Oid ids[num_ids];
-		int counts_per_combiner[continuous_query_num_combiners];
+		Oid *ids = (Oid*) calloc(sizeof(Oid), num_ids);
+		int *counts_per_combiner = (int *)calloc(sizeof(int), continuous_query_num_combiners);
 		int i = 0;
 		Oid max;
 		ListCell *lc;
@@ -99,7 +99,7 @@ get_next_id(Relation rel)
 		int target_combiner;
 		List *potential_ids;
 
-		MemSet(counts_per_combiner, 0, sizeof(counts_per_combiner));
+		MemSet(counts_per_combiner, 0, sizeof(int)*continuous_query_num_combiners);
 
 		foreach(lc, ids_list)
 		{
